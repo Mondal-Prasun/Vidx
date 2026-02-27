@@ -30,6 +30,7 @@ android {
         versionName = flutter.versionName
     }
 
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
@@ -40,10 +41,11 @@ android {
 
     dependencies{
         //for only choosing video and images
-        implementation("androidx.activity:activity:1.12.3")
-        implementation("androidx.activity:activity-ktx:1.12.3")
+        implementation("androidx.activity:activity:1.12.4")
+        implementation("androidx.activity:activity-ktx:1.12.4")
         implementation("androidx.fragment:fragment-ktx:1.8.9")
         implementation("androidx.appcompat:appcompat:1.7.1")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     }
 }
 

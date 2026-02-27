@@ -32,6 +32,7 @@ class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             methodChannel

@@ -1,11 +1,9 @@
 import 'dart:io';
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vidx/channel/android_channel.dart';
-
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,8 +15,15 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final AndoidChannel _andoidChannel = AndoidChannel();
 
+  void _checkFfmpeg() async {
+    final fSession = await FFmpegKit.execute("-version");
+    print(await fSession.getOutput());
+  }
+
   @override
   Widget build(BuildContext context) {
+    _checkFfmpeg();
+
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -31,7 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               showDialog(
                 context: context,
                 builder: (ctx) {
-                  return Image.memory(image.bytes);
+                  return Image.file(File(image.filePath));
                 },
               );
             },
@@ -41,15 +46,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () async {
               final video = await _andoidChannel.getSelectVideo();
 
-              final tempPath = await getTemporaryDirectory();
-              final filePath = p.join(tempPath.path, video.name);
-              final vFile = File(filePath);
-              vFile.writeAsBytesSync(video.bytes);
-
               showDialog(
                 context: context,
                 builder: (ctx) {
-                  return TestVideo(videoFile: vFile);
+                  return TestVideo(videoFile: File(video.filePath));
                 },
               );
             },
