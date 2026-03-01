@@ -26,6 +26,8 @@ class AssetDatabase {
     path TEXT NOT NULL
 );''';
 
+  AssetDatabase._();
+
   Future<void> _inilizeDb() async {
     final String dbPath = await getDatabasesPath();
     final String absolutePath = p.join(dbPath, _dbName);
@@ -40,10 +42,10 @@ class AssetDatabase {
     );
   }
 
-  AssetDatabase.init() {
-    _inilizeDb().then((v) {
-      print("db initilized");
-    });
+  static Future<AssetDatabase> init() async {
+    final instance = AssetDatabase._();
+    await instance._inilizeDb();
+    return instance;
   }
 
   Future<void> insertVideoData(VideoMedia vMedia) async {
@@ -58,6 +60,18 @@ class AssetDatabase {
     });
   }
 
+  Future<List<VideoMedia>> getAllVideoes() async {
+    final res = await _db.query(_Mediatable.Video.name);
+
+    List<VideoMedia> videoList = [];
+
+    for (final e in res) {
+      videoList.add(VideoMedia.fromDbMap(e));
+    }
+
+    return videoList;
+  }
+
   Future<void> insertImageData(ImageMedia iMedia) async {
     await _db.insert(_Mediatable.Image.name, {
       "uuid": iMedia.uuid,
@@ -67,5 +81,17 @@ class AssetDatabase {
       "width": iMedia.width,
       "path": iMedia.filePath,
     });
+  }
+
+  Future<List<ImageMedia>> getAllImages() async {
+    final res = await _db.query(_Mediatable.Image.name);
+
+    List<ImageMedia> imageList = [];
+
+    for (final e in res) {
+      imageList.add(ImageMedia.fromDbMap(e));
+    }
+
+    return imageList;
   }
 }
