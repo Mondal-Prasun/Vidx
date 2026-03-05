@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
+import 'package:vidx/provider/edit_node_provider.dart';
 import 'package:vidx/provider/media_node_provider.dart';
 import 'package:vidx/channel/android_channel.dart';
 import 'dart:io';
@@ -91,17 +92,17 @@ class _ChooseMediaState extends ConsumerState<ChooseMedia> {
               itemCount: data.length,
               itemBuilder: (_, index) {
                 if (widget.nodeName == NodeConstant.video) {
-                  print((data[index] as VideoMedia).filePath);
                   return _SmallVideoView(
                     cWidth: cWidth,
-                    filePath: (data[index] as VideoMedia).filePath,
+                    videoMedia: data[index] as VideoMedia,
                   );
                 } else if (widget.nodeName == NodeConstant.image) {
                   return _SmallImageView(
                     cWidth: cWidth,
-                    filePath: (data[index] as ImageMedia).filePath,
+                    imageMedia: data[index] as ImageMedia,
                   );
                 }
+                return null;
               },
             );
           }
@@ -113,39 +114,45 @@ class _ChooseMediaState extends ConsumerState<ChooseMedia> {
   }
 }
 
-class _SmallVideoView extends StatefulWidget {
-  const _SmallVideoView({required this.cWidth, required this.filePath});
+class _SmallVideoView extends ConsumerStatefulWidget {
+  const _SmallVideoView({required this.cWidth, required this.videoMedia});
   final double cWidth;
-  final String filePath;
+  final VideoMedia videoMedia;
+
   @override
-  State<StatefulWidget> createState() => _SmallVideoViewState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _SmallVideoViewState();
 }
 
-class _SmallVideoViewState extends State<_SmallVideoView> {
+class _SmallVideoViewState extends ConsumerState<_SmallVideoView> {
   late final VideoPlayerController _videoPlayerController;
 
   @override
   void initState() {
     super.initState();
 
-    _videoPlayerController = VideoPlayerController.file(File(widget.filePath))
-      ..initialize().then((value) {
-        setState(() {});
-      });
+    _videoPlayerController =
+        VideoPlayerController.file(File(widget.videoMedia.filePath))
+          ..initialize().then((value) {
+            setState(() {});
+          });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    () async {
+      await _videoPlayerController.dispose();
+    }();
   }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onHover: (isHover) {
-        if (isHover) {
-          _videoPlayerController.play();
-        } else {
-          _videoPlayerController.pause();
-          _videoPlayerController.seekTo(Duration.zero);
-        }
-      },
+      onTap: () async {
+        final vNode = await VideoNode.create(widget.videoMedia);
 
+        ref.read(editNodeProvider.notifier).currentNode = vNode;
+      },
       onLongPress: () {
         _videoPlayerController.play();
       },
@@ -159,9 +166,9 @@ class _SmallVideoViewState extends State<_SmallVideoView> {
 }
 
 class _SmallImageView extends StatefulWidget {
-  const _SmallImageView({required this.cWidth, required this.filePath});
+  const _SmallImageView({required this.cWidth, required this.imageMedia});
   final double cWidth;
-  final String filePath;
+  final ImageMedia imageMedia;
 
   @override
   State<StatefulWidget> createState() => _SmallImageViewState();
@@ -176,7 +183,7 @@ class _SmallImageViewState extends State<_SmallImageView> {
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(15)),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
-        child: Image.file(File(widget.filePath)),
+        child: Image.file(File(widget.imageMedia.filePath)),
       ),
     );
   }

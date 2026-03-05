@@ -1,12 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
-import 'dart:io';
 
 import 'package:uuid/uuid.dart';
+import 'package:vidx/provider/storage_save.dart';
 
-class ImageMedia {
+class ImageMedia with StorageSave {
   ImageMedia._();
   String uuid = "";
   String name = "";
@@ -15,18 +13,9 @@ class ImageMedia {
   double width = 0;
   String filePath = "";
 
-  Future<String> _saveData(String fileName, Uint8List fileBytes) async {
-    final appPath = await getApplicationDocumentsDirectory();
-    final String storePath = p.join(appPath.path, fileName);
-
-    final f = File(storePath);
-    f.writeAsBytesSync(fileBytes);
-
-    return storePath;
-  }
-
   static Future<ImageMedia> fromMap(Map<dynamic, dynamic> data) async {
     final instance = ImageMedia._();
+
     if (data.isNotEmpty) {
       final bytes = data["mediaByte"] as Uint8List;
 
@@ -36,7 +25,7 @@ class ImageMedia {
       instance.height = double.parse(data["mediaImageHeight"]);
       instance.width = double.parse(data["mediaImageWidth"]);
 
-      instance.filePath = await instance._saveData(instance.name, bytes);
+      instance.filePath = await instance.saveData(instance.name, bytes);
     }
     return instance;
   }
@@ -51,7 +40,7 @@ class ImageMedia {
   }
 }
 
-class VideoMedia {
+class VideoMedia with StorageSave {
   VideoMedia._();
   String uuid = "";
   String name = "";
@@ -60,19 +49,6 @@ class VideoMedia {
   double width = 0;
   double duration = 0;
   String filePath = "";
-
-  Future<String> _saveData(String fileName, Uint8List fileBytes) async {
-    final appPath = await getApplicationDocumentsDirectory();
-    final String storePath = p.join(appPath.path, fileName);
-
-    final f = File(storePath);
-    f.writeAsBytesSync(fileBytes);
-
-    print(
-      "this is .................................................$storePath",
-    );
-    return storePath;
-  }
 
   static Future<VideoMedia> fromMap(Map<dynamic, dynamic> data) async {
     final instance = VideoMedia._();
@@ -86,7 +62,7 @@ class VideoMedia {
       final bytes = data["mediaByte"] as Uint8List;
       instance.duration = double.parse(data["mediaVideoDuration"]);
 
-      instance.filePath = await instance._saveData(instance.name, bytes);
+      instance.filePath = await instance.saveData(instance.name, bytes);
     }
 
     return instance;
